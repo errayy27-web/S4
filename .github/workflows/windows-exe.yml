@@ -44,6 +44,22 @@ jobs:
       - name: Build Windows executable
         working-directory: pc
         run: python -m PyInstaller --noconfirm --clean --onefile --name SSOIL_Server --hidden-import load_existing_config --hidden-import merkez_arsiv --hidden-import ssoil_kasa_ek --hidden-import vardiya_entegre --hidden-import pyodbc SSOIL_Server.py
+      - name: Smoke test built EXE for startup import errors
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'pc/dist/SSOIL_Server.exe').Path
+          $stdout = Join-Path $env:RUNNER_TEMP 'ssoil_smoke_out.txt'
+          $stderr = Join-Path $env:RUNNER_TEMP 'ssoil_smoke_err.txt'
+          $p = Start-Process -FilePath $exe -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          Start-Sleep -Seconds 12
+          if (!$p.HasExited) {
+            Stop-Process -Id $p.Id -Force
+            Write-Host 'Startup smoke test passed: process remained running'
+          } else {
+            $log = (Get-Content $stdout -Raw -ErrorAction SilentlyContinue) + (Get-Content $stderr -Raw -ErrorAction SilentlyContinue)
+            Write-Host $log
+            throw "EXE exited during startup with code $($p.ExitCode). Refusing to publish."
+          }
       - name: Add crash diagnostic launcher
         shell: pwsh
         run: |
