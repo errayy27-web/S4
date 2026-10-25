@@ -18,12 +18,22 @@ jobs:
         run: |
           if (!(Test-Path 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip')) { throw 'Kaynak ZIP dosyasi S4 ana dizininde yok' }
           Expand-Archive -LiteralPath 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip' -DestinationPath '.' -Force
+      - name: Integrate existing local bridge settings
+        shell: pwsh
+        run: |
+          Copy-Item -LiteralPath 'pc/load_existing_config.py' -Destination 'pc/load_existing_config.py' -ErrorAction SilentlyContinue
+          $entry = 'pc/SSOIL_Server.py'
+          $source = Get-Content -LiteralPath $entry -Raw
+          if (!$source.Contains('load_existing_config.load()')) {
+            $source = $source.Replace("import merkez", "import load_existing_config; load_existing_config.load()" + [Environment]::NewLine + "import merkez")
+            Set-Content -LiteralPath $entry -Value $source -Encoding UTF8
+          }
       - name: Install dependencies
         working-directory: pc
         run: python -m pip install -r requirements-build.txt
       - name: Build Windows executable
         working-directory: pc
-        run: python -m PyInstaller --noconfirm --clean --onefile --name SSOIL_Server --hidden-import merkez_arsiv --hidden-import ssoil_kasa_ek --hidden-import vardiya_entegre --hidden-import pyodbc SSOIL_Server.py
+        run: python -m PyInstaller --noconfirm --clean --onefile --name SSOIL_Server --hidden-import load_existing_config --hidden-import merkez_arsiv --hidden-import ssoil_kasa_ek --hidden-import vardiya_entegre --hidden-import pyodbc SSOIL_Server.py
       - uses: actions/upload-artifact@v4
         with:
           name: SS_OIL_PC_TEK_EXE
