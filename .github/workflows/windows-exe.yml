@@ -6,6 +6,7 @@ on:
       - 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip'
       - '.github/workflows/windows-exe.yml'
       - 'pc/load_existing_config.py'
+      - 'pc/patch_shift_sync.py'
 jobs:
   build:
     runs-on: windows-latest
@@ -19,6 +20,8 @@ jobs:
         run: |
           if (!(Test-Path 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip')) { throw 'Diagnostik kaynak ZIP dosyasi S4 ana dizininde yok' }
           Expand-Archive -LiteralPath 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip' -DestinationPath '.' -Force
+      - name: Fix bidirectional shift cloud pull
+        run: python pc/patch_shift_sync.py
       - name: Integrate existing local bridge settings
         shell: pwsh
         run: |
