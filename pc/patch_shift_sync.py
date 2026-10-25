@@ -9,6 +9,8 @@ pending=CASE WHEN COALESCE(CAST(json_extract(excluded.payload,'$.revision') AS I
 WHERE vardiya_local.pending=0
 OR COALESCE(CAST(json_extract(excluded.payload,'$.revision') AS INTEGER),0)>COALESCE(CAST(json_extract(vardiya_local.payload,'$.revision') AS INTEGER),0)"""
 assert s.count(old)==1, "Expected shift cloud-pull SQL not found; refusing unsafe build"
-s=s.replace(old,new)
+s=s.replace("'"+old+"'", "'''"+new+"'''")
+import ast
+ast.parse(s, filename=str(p))
 p.write_text(s,encoding="utf-8")
 print("Cloud pull accepts newer phone revisions even if stale local pending flag remains")
