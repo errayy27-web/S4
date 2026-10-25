@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip'
+      - 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip'
       - '.github/workflows/windows-exe.yml'
       - 'pc/load_existing_config.py'
 jobs:
@@ -17,12 +17,11 @@ jobs:
       - name: Extract PC source
         shell: pwsh
         run: |
-          if (!(Test-Path 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip')) { throw 'Kaynak ZIP dosyasi S4 ana dizininde yok' }
-          Expand-Archive -LiteralPath 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip' -DestinationPath '.' -Force
+          if (!(Test-Path 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip')) { throw 'Diagnostik kaynak ZIP dosyasi S4 ana dizininde yok' }
+          Expand-Archive -LiteralPath 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip' -DestinationPath '.' -Force
       - name: Integrate existing local bridge settings
         shell: pwsh
         run: |
-          Copy-Item -LiteralPath 'pc/load_existing_config.py' -Destination 'pc/load_existing_config.py' -ErrorAction SilentlyContinue
           $entry = 'pc/SSOIL_Server.py'
           $source = Get-Content -LiteralPath $entry -Raw
           if (!$source.Contains('load_existing_config.load()')) {
