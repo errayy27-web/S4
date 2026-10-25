@@ -5,6 +5,7 @@ on:
     paths:
       - 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip'
       - '.github/workflows/windows-exe.yml'
+      - 'pc/load_existing_config.py'
 jobs:
   build:
     runs-on: windows-latest
