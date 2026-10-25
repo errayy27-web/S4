@@ -37,8 +37,24 @@ jobs:
       - name: Build Windows executable
         working-directory: pc
         run: python -m PyInstaller --noconfirm --clean --onefile --name SSOIL_Server --hidden-import load_existing_config --hidden-import merkez_arsiv --hidden-import ssoil_kasa_ek --hidden-import vardiya_entegre --hidden-import pyodbc SSOIL_Server.py
+      - name: Add crash diagnostic launcher
+        shell: pwsh
+        run: |
+          @'
+          @echo off
+          cd /d "%~dp0"
+          echo SS OIL merkez baslatiliyor...
+          "SSOIL_Server.exe" > "SSOIL_START_LOG.txt" 2>&1
+          echo.
+          echo Program kapandi. Hata kaydi:
+          type "SSOIL_START_LOG.txt"
+          echo.
+          pause
+          '@ | Set-Content -LiteralPath 'pc/dist/BASLAT_HATA_GOSTER.bat' -Encoding ascii
       - uses: actions/upload-artifact@v4
         with:
           name: SS_OIL_PC_TEK_EXE
-          path: pc/dist/SSOIL_Server.exe
+          path: |
+            pc/dist/SSOIL_Server.exe
+            pc/dist/BASLAT_HATA_GOSTER.bat
           if-no-files-found: error
