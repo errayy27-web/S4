@@ -27,6 +27,11 @@ jobs:
             Copy-Item -LiteralPath $shift.FullName -Destination 'pc/vardiya_entegre.py'
           }
           if (!(Test-Path 'pc/vardiya_entegre.py')) { throw 'Shift module absent, refusing broken EXE' }
+      - name: Validate shift module and imports
+        shell: pwsh
+        run: |
+          Get-Item pc/vardiya_entegre.py | Format-List FullName,Length
+          python -c "import sys;sys.path.insert(0,'pc');import vardiya_entegre;print('SHIFT_MODULE_OK',vardiya_entegre.__file__)"
       - name: Fix bidirectional shift cloud pull
         run: python pc/patch_shift_sync.py
       - name: Integrate existing local bridge settings
@@ -43,7 +48,7 @@ jobs:
         run: python -m pip install -r requirements-build.txt
       - name: Build Windows executable
         working-directory: pc
-        run: python -m PyInstaller --noconfirm --clean --onefile --name SSOIL_Server --hidden-import load_existing_config --hidden-import merkez_arsiv --hidden-import ssoil_kasa_ek --hidden-import vardiya_entegre --hidden-import pyodbc SSOIL_Server.py
+        run: python -m PyInstaller --noconfirm --clean --onefile --name SSOIL_Server --paths . --add-data "vardiya_entegre.py;." --hidden-import load_existing_config --hidden-import merkez_arsiv --hidden-import ssoil_kasa_ek --hidden-import vardiya_entegre --hidden-import pyodbc SSOIL_Server.py
       - name: Smoke test built EXE for startup import errors
         shell: pwsh
         run: |
