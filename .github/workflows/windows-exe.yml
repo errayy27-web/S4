@@ -20,6 +20,13 @@ jobs:
         run: |
           if (!(Test-Path 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip')) { throw 'Diagnostik kaynak ZIP dosyasi S4 ana dizininde yok' }
           Expand-Archive -LiteralPath 'SS_OIL_PC_8767_KASA_VARDIYA_DIAGNOSTIK.zip' -DestinationPath '.' -Force
+          if (!(Test-Path 'pc/vardiya_entegre.py')) {
+            Expand-Archive -LiteralPath 'SS_OIL_PC_8767_TEK_PROGRAM_VARDIYA_KAYNAK (1).zip' -DestinationPath 'vardiya_source' -Force
+            $shift = Get-ChildItem -LiteralPath 'vardiya_source' -Recurse -Filter 'vardiya_entegre.py' | Select-Object -First 1
+            if (!$shift) { throw 'vardiya_entegre.py missing from both source ZIP archives' }
+            Copy-Item -LiteralPath $shift.FullName -Destination 'pc/vardiya_entegre.py'
+          }
+          if (!(Test-Path 'pc/vardiya_entegre.py')) { throw 'Shift module absent, refusing broken EXE' }
       - name: Fix bidirectional shift cloud pull
         run: python pc/patch_shift_sync.py
       - name: Integrate existing local bridge settings
